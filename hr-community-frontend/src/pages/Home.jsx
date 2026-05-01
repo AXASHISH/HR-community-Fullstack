@@ -33,9 +33,9 @@ const Home = () => {
         mobile: "/carosal_bg_2.jpeg",
       },
       {
-        desktop: "/carosal_bg_3.jpeg",
-        tablet: "/carosal_bg_3.jpeg",
-        mobile: "/carosal_bg_3.jpeg",
+        desktop: "/carosal_bg_1.jpeg",
+        tablet: "/carosal_bg_1.jpeg",
+        mobile: "/carosal_bg_1.jpeg",
       }
     ]
   };
