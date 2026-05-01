@@ -4,7 +4,6 @@ from datetime import datetime, timedelta
 
 from app.api import deps
 from app.core import security
-from app.core.config import settings
 from app.models.hrcommunity import HRCommunityUser, RequestStatus
 from app.schemas.auth import (
     EmailOnlyRequest,
@@ -12,10 +11,11 @@ from app.schemas.auth import (
     LoginOTPVerify,
     LoginResponse,
     EmailVerifyResponse,
+    OTPVerifyRequest,
     OTPAndDetailsRequest
 )
 from app.utils.helpers import generate_otp, is_corporate_email
-from app.services.email import send_email
+from app.services.email import build_hr_otp_email, send_email
 
 router = APIRouter()
 
@@ -31,21 +31,26 @@ async def request_login_otp(login_request: LoginRequest, db: Session = Depends(d
     if not user.is_email_verified:
         raise HTTPException(status_code=403, detail="Please verify your email first.")
 
-    login_otp = "123456" if settings.BYPASS_OTP else generate_otp()
+    login_otp = generate_otp()
 
     user.login_otp = login_otp
     user.login_otp_expires_at = datetime.utcnow() + timedelta(minutes=5)
     db.commit()
 
-    if not settings.BYPASS_OTP:
-        send_email(
-            recipient=user.email,
+    send_email(
+        recipient=user.email,
+        recipient_name=user.name,
+        subject="Login OTP",
+        htmlbody=build_hr_otp_email(
             recipient_name=user.name,
-            subject="Login OTP",
-            htmlbody="Your login OTP is {otp}",
             company_name=user.company_name,
-            otp=login_otp
-        )
+            otp=login_otp,
+            purpose="Login Verification",
+            expires_in_minutes=5
+        ),
+        company_name=user.company_name,
+        otp=login_otp
+    )
 
     return {"success": True, "message": "Login OTP sent", "email": user.email}
 
@@ -55,27 +60,18 @@ async def request_login_otp(login_request: LoginRequest, db: Session = Depends(d
 @router.post("/login/verify", response_model=LoginResponse)
 async def verify_login_otp(login_verify: LoginOTPVerify, db: Session = Depends(deps.get_db)):
 
-    if settings.BYPASS_OTP:
-        if login_verify.otp != "123456":
-            raise HTTPException(status_code=400, detail="Invalid OTP")
-
-        user = db.query(HRCommunityUser).filter(
-            HRCommunityUser.email == login_verify.email
-        ).first()
-    else:
-        user = db.query(HRCommunityUser).filter(
-            HRCommunityUser.email == login_verify.email,
-            HRCommunityUser.login_otp == login_verify.otp
-        ).first()
+    user = db.query(HRCommunityUser).filter(
+        HRCommunityUser.email == login_verify.email,
+        HRCommunityUser.login_otp == login_verify.otp
+    ).first()
 
     if not user or (
         user.login_otp_expires_at and user.login_otp_expires_at < datetime.utcnow()
     ):
         raise HTTPException(status_code=400, detail="Invalid or expired OTP")
 
-    if not settings.BYPASS_OTP:
-        if user.status != RequestStatus.approved:
-            raise HTTPException(status_code=403, detail="Account not approved")
+    if user.status != RequestStatus.approved:
+        raise HTTPException(status_code=403, detail="Account not approved")
 
     user.login_otp = None
     user.login_otp_expires_at = None
@@ -109,7 +105,7 @@ async def initiate_email_verification(request: EmailOnlyRequest, db: Session = D
     if not is_corporate_email(request.email):
         raise HTTPException(status_code=400, detail="Use corporate email")
 
-    otp = "123456" if settings.BYPASS_OTP else generate_otp()
+    otp = generate_otp()
 
     user = db.query(HRCommunityUser).filter(HRCommunityUser.email == request.email).first()
 
@@ -135,19 +131,45 @@ async def initiate_email_verification(request: EmailOnlyRequest, db: Session = D
 
     db.commit()
 
-    if not settings.BYPASS_OTP:
-        send_email(
-            request.email,
-            request.name,
-            "Verify Email",
-            "Your OTP is {otp}",
-            otp=otp
-        )
+    send_email(
+        request.email,
+        request.name,
+        "HR Community Awards - Email Verification",
+        build_hr_otp_email(
+            recipient_name=request.name,
+            company_name=request.email.split("@")[1].lower(),
+            otp=otp,
+            purpose="Email Verification",
+            expires_in_minutes=5
+        ),
+        otp=otp
+    )
 
     return {
         "success": True,
-        "message": "OTP sent (bypass)" if settings.BYPASS_OTP else "OTP sent",
-        "otp": otp if settings.BYPASS_OTP else None
+        "message": "OTP sent"
+    }
+
+
+# ================= EMAIL OTP VERIFY =================
+
+@router.post("/verify-email/verify", response_model=dict)
+async def verify_email_otp(request: OTPVerifyRequest, db: Session = Depends(deps.get_db)):
+    user = db.query(HRCommunityUser).filter(
+        HRCommunityUser.email == request.email,
+        HRCommunityUser.otp == request.otp,
+        HRCommunityUser.is_email_verified == False
+    ).first()
+
+    if not user:
+        raise HTTPException(status_code=400, detail="Invalid email or OTP")
+
+    if user.otp_expires_at and user.otp_expires_at < datetime.utcnow():
+        raise HTTPException(status_code=400, detail="OTP expired")
+
+    return {
+        "success": True,
+        "message": "OTP verified"
     }
 
 
@@ -156,20 +178,11 @@ async def initiate_email_verification(request: EmailOnlyRequest, db: Session = D
 @router.post("/verify-email/confirm", response_model=EmailVerifyResponse)
 async def confirm_email_verification(request: OTPAndDetailsRequest, db: Session = Depends(deps.get_db)):
 
-    if settings.BYPASS_OTP:
-        if request.otp != "123456":
-            raise HTTPException(status_code=400, detail="Invalid OTP")
-
-        user = db.query(HRCommunityUser).filter(
-            HRCommunityUser.email == request.email,
-            HRCommunityUser.is_email_verified == False
-        ).first()
-    else:
-        user = db.query(HRCommunityUser).filter(
-            HRCommunityUser.email == request.email,
-            HRCommunityUser.otp == request.otp,
-            HRCommunityUser.is_email_verified == False
-        ).first()
+    user = db.query(HRCommunityUser).filter(
+        HRCommunityUser.email == request.email,
+        HRCommunityUser.otp == request.otp,
+        HRCommunityUser.is_email_verified == False
+    ).first()
 
     if not user:
         raise HTTPException(status_code=400, detail="Invalid email or OTP")

@@ -38,7 +38,4 @@ class Settings(BaseSettings):
     BASE_FILE_URL: str = "https://erpapi.eduskillsfoundation.org/uploads"
     
 
-    # For testing only by Ashish
-    BYPASS_OTP: bool = os.getenv("BYPASS_OTP", "false").lower() == "true"
-        
 settings = Settings()

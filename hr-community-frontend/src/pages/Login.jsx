@@ -95,7 +95,7 @@ const Login = () => {
     setResendLoading(true);
     setError("");
     try {
-      await axios.post(`${import.meta.env.VITE_API_URL}/login/resend-otp`, {
+      await axios.post(`${import.meta.env.VITE_API_URL}/auth/login/request`, {
         email: formData.email,
       });
       setResendTimer(30);

@@ -3,6 +3,47 @@ import hashlib
 from typing import Any, Dict, Optional
 from app.core.config import settings
 
+def build_hr_otp_email(
+    recipient_name: str,
+    company_name: str,
+    otp: str,
+    purpose: str = "Email Verification",
+    expires_in_minutes: int = 5,
+) -> str:
+    """Build the styled HR Community Awards OTP email."""
+    safe_company_name = company_name or "your organization"
+
+    return f"""
+    <div style="max-width: 760px; margin: 0 auto; padding: 36px 26px; border: 1px solid #d9d9d9; border-radius: 8px; font-family: Arial, Helvetica, sans-serif; color: #0f172a; line-height: 1.6;">
+      <h2 style="text-align: center; margin: 0 0 28px; font-size: 28px; font-weight: 700; color: #18324f;">
+        HR Community Awards - {purpose}
+      </h2>
+
+      <p style="font-size: 18px; margin: 0 0 18px;">Dear <strong>{recipient_name}</strong>,</p>
+      <p style="font-size: 18px; margin: 0 0 26px;">
+        Thank you for registering for HR Community Awards from <strong>{safe_company_name}</strong>.
+      </p>
+
+      <div style="background: #f8fafc; border-radius: 6px; padding: 42px 20px; text-align: center; margin: 0 0 26px;">
+        <p style="font-size: 20px; margin: 0 0 20px;">Your verification OTP is:</p>
+        <div style="font-size: 44px; line-height: 1; font-weight: 700; letter-spacing: 10px; color: #ef5148;">
+          {otp}
+        </div>
+      </div>
+
+      <p style="font-size: 18px; margin: 0 0 18px;"><strong>This OTP will expire in {expires_in_minutes} minutes.</strong></p>
+      <p style="font-size: 18px; margin: 0 0 40px;">If you did not request this verification, please ignore this email.</p>
+
+      <hr style="border: 0; border-top: 1px solid #e5e7eb; margin: 0 0 34px;">
+
+      <p style="font-size: 18px; margin: 0; color: #4b5563;">
+        Best regards,<br>
+        <strong>HR Community Awards Team</strong><br>
+        EduSkills Foundation
+      </p>
+    </div>
+    """
+
 def send_email_zepto(recipient: str, recipient_name: str, subject: str, htmlbody: str, **kwargs) -> bool:
     """Send email using ZeptoMail API"""
     headers = {
@@ -88,4 +129,6 @@ def send_email(recipient: str, recipient_name: str, subject: str, htmlbody: str,
     """Try ZeptoMail first, then fallback to backup"""
     if send_email_zepto(recipient, recipient_name, subject, htmlbody, **kwargs):
         return True
-    return send_email_backup(recipient, recipient_name, subject, htmlbody, kwargs.get('company_name', 'N/A'), **kwargs)
+    fallback_kwargs = kwargs.copy()
+    company_name = fallback_kwargs.pop('company_name', 'N/A')
+    return send_email_backup(recipient, recipient_name, subject, htmlbody, company_name, **fallback_kwargs)

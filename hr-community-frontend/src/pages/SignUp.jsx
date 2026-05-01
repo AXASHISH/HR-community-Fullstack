@@ -73,7 +73,7 @@ const SignUp = ({ onSuccessfulRegister }) => {
     setErrorMessage("");
 
     try {
-      await axios.post(`${import.meta.env.VITE_API_URL}/auth/login/verify`, {
+      await axios.post(`${import.meta.env.VITE_API_URL}/auth/verify-email/verify`, {
         email: watchEmail,
         otp,
       });
