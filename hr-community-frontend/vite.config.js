@@ -14,21 +14,28 @@ export default defineConfig({
     // Code splitting for better caching
     rollupOptions: {
       output: {
-        manualChunks: {
-          // Vendor chunks
-          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
-          'ui-vendor': ['@radix-ui/react-accordion', '@radix-ui/react-alert-dialog', '@radix-ui/react-avatar'],
-          'utility-vendor': ['axios', 'clsx', 'tailwind-merge', 'framer-motion'],
-          'query-vendor': ['@tanstack/react-query'],
+        manualChunks(id) {
+          if (!id.includes('node_modules')) return;
+
+          if (/(react|react-dom|react-router-dom)/.test(id)) {
+            return 'react-vendor';
+          }
+          if (/@radix-ui\/react-(accordion|alert-dialog|avatar)/.test(id)) {
+            return 'ui-vendor';
+          }
+          if (/(axios|clsx|tailwind-merge|framer-motion)/.test(id)) {
+            return 'utility-vendor';
+          }
+          if (/@tanstack\/react-query/.test(id)) {
+            return 'query-vendor';
+          }
         },
       },
     },
     // Optimize chunk sizes
-    minify: 'terser',
-    terserOptions: {
-      compress: {
-        drop_console: true,
-      },
+    minify: 'esbuild',
+    esbuild: {
+      drop: ['console'],
     },
   },
   // Dev server optimizations

@@ -7,6 +7,7 @@ import Activity from "../components/Home/Activity";
 import KeyHilight from "./Keyhilight";
 import MissionVision from "../components/Home/MissionVision";
 import CommunityFooter from "../components/CommunityFooter";
+import MemberFeatures from "../components/Home/MemberFeatures";
 
 const Home = () => {
   const location = useLocation();
@@ -22,19 +23,19 @@ const Home = () => {
   const backgroundImages = {
     hero: [
       {
-        desktop: "https://res.cloudinary.com/dleznkbgs/image/upload/v1754375337/Community_1024_2_v638gw.png",
-        tablet: "https://res.cloudinary.com/dleznkbgs/image/upload/v1754375337/Community_1024_2_v638gw.png",
-        mobile: "https://res.cloudinary.com/dleznkbgs/image/upload/v1754402461/Community_424_2_epx41n.png",
+        desktop: "/carosal_bg_1.jpeg",
+        tablet: "/carosal_bg_1.jpeg",
+        mobile: "/carosal_bg_1.jpeg",
       },
       {
-        desktop: "https://res.cloudinary.com/dleznkbgs/image/upload/v1754462259/SUMMIT_rqs69t.png",
-        tablet: "https://res.cloudinary.com/dleznkbgs/image/upload/v1754465673/SUMMIT_600px_jrrjv4.pnghttps://res.cloudinary.com/dleznkbgs/image/upload/v1754120366/Untitled_design_20250802_130231_0000_hwppm9.png",
-        mobile: "https://res.cloudinary.com/dleznkbgs/image/upload/v1754465650/SUMMIT_424_cqzbdc.png",
+        desktop: "/carosal_bg_2.jpeg",
+        tablet: "/carosal_bg_2.jpeg",
+        mobile: "/carosal_bg_2.jpeg",
       },
       {
-        desktop: "https://res.cloudinary.com/dleznkbgs/image/upload/v1754370859/HR_Excellence_1024_j7wt5b.png",
-        tablet: "https://res.cloudinary.com/dleznkbgs/image/upload/v1754468085/HR_Excellence_600_orkngx.png",
-        mobile: "https://res.cloudinary.com/dleznkbgs/image/upload/v1754468069/HR_Excellence_424_dfkwza.png",
+        desktop: "/carosal_bg_3.jpeg",
+        tablet: "/carosal_bg_3.jpeg",
+        mobile: "/carosal_bg_3.jpeg",
       }
     ]
   };
@@ -148,109 +149,124 @@ const Home = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-white">
-      {/* HERO SECTION - Replaced with HeroSection component functionality */}
-      <header className="relative min-h-[70vh] w-full overflow-hidden">
-        <div className="absolute -top-28 inset-0 w-full h-screen">
-          {/* Render all hero images with transitions */}
+      {/* HERO SECTION - Modern Carousel */}
+      <header 
+        className="relative w-full h-[50vh] max-h-[50vh] overflow-hidden rounded-b-[2.5rem] shadow-[0_35px_90px_rgba(0,0,0,0.22)]"
+      >
+        {/* Carousel Container */}
+        <div className="relative w-full h-full bg-[#071828]">
+          {/* Render all hero images with smooth transitions */}
           {backgroundImages.hero.map((imageSet, index) => (
             <div
               key={index}
-              className={`absolute inset-0 w-full h-screen transition-opacity duration-1000  ${
-                currentHeroImage === index ? "opacity-100" : "opacity-0"
+              className={`absolute inset-0 flex items-center justify-center transition-all duration-1000 ease-in-out ${
+                currentHeroImage === index ? "opacity-100 scale-100" : "opacity-0 scale-105"
               }`}
             >
-              {/* Desktop Hero Image (lg and above) */}
+              {/* Desktop Hero Image */}
               <img
                 src={imageSet.desktop}
-                alt={`EduSkills Summit Background ${index + 1}`}
-                className="hidden lg:block w-full h-full object-contain object-center"
+                alt={`Carousel Slide ${index + 1}`}
+                className="hidden lg:block w-full h-full object-cover object-center"
                 loading={index === 0 ? "eager" : "lazy"}
-                style={{ imageRendering: "crisp-edges" }}
               />
 
-              {/* Tablet Hero Image (md to lg) */}
+              {/* Tablet Hero Image */}
               <img
                 src={imageSet.tablet}
-                alt={`EduSkills Summit Background Tablet ${index + 1}`}
-                className="hidden md:block lg:hidden w-full h-full object-contain object-center"
+                alt={`Carousel Slide ${index + 1} Tablet`}
+                className="hidden md:block lg:hidden w-full h-full object-cover object-center"
                 loading={index === 0 ? "eager" : "lazy"}
-                style={{ imageRendering: "crisp-edges" }}
               />
 
-              {/* Mobile Hero Image (below md) */}
+              {/* Mobile Hero Image */}
               <img
                 src={imageSet.mobile}
-                alt={`EduSkills Summit Background Mobile ${index + 1}`}
-                className="block md:hidden w-full h-full object-contain object-center"
+                alt={`Carousel Slide ${index + 1} Mobile`}
+                className="block md:hidden w-full h-full object-cover object-center"
                 loading={index === 0 ? "eager" : "lazy"}
-                style={{ imageRendering: "crisp-edges" }}
               />
             </div>
           ))}
 
-          {/* Fallback background color */}
-          <div className="absolute inset-0 bg-[#1161A0] -z-10"></div>
-        </div>
+          {/* Enhanced Gradient Overlay */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-transparent"></div>
 
-        {/* Navigation Arrows */}
-        <div className="absolute inset-0 flex items-center justify-between px-4 md:px-8 z-20">
-          {/* Left Arrow */}
+          {/* Left Navigation Button */}
           <button
             onClick={goToPrevious}
-            className="group bg-black/30 hover:bg-black/50 backdrop-blur-sm rounded-full p-2 md:p-3 transition-all duration-300 hover:scale-110 active:scale-95 shadow-lg"
-            aria-label="Previous image"
+            className="absolute left-4 sm:left-6 md:left-8 top-1/2 -translate-y-1/2 z-30 group"
+            aria-label="Previous slide"
           >
-            <svg
-              className="w-5 h-5 md:w-6 md:h-6 text-white transition-colors duration-300"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M15 19l-7-7 7-7"
-              />
-            </svg>
+            <div className="flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 bg-white/15 hover:bg-white/30 backdrop-blur-md rounded-full transition-all duration-300 group-hover:scale-110 active:scale-95 shadow-lg border border-white/20">
+              <svg
+                className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 text-white"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2.5}
+                  d="M15 19l-7-7 7-7"
+                />
+              </svg>
+            </div>
           </button>
 
-          {/* Right Arrow */}
+          {/* Right Navigation Button */}
           <button
             onClick={goToNext}
-            className="group bg-black/30 hover:bg-black/50 backdrop-blur-sm rounded-full p-2 md:p-3 transition-all duration-300 hover:scale-110 active:scale-95 shadow-lg"
-            aria-label="Next image"
+            className="absolute right-4 sm:right-6 md:right-8 top-1/2 -translate-y-1/2 z-30 group"
+            aria-label="Next slide"
           >
-            <svg
-              className="w-5 h-5 md:w-6 md:h-6 text-white transition-colors duration-300"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9 5l7 7-7 7"
-              />
-            </svg>
+            <div className="flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 bg-white/15 hover:bg-white/30 backdrop-blur-md rounded-full transition-all duration-300 group-hover:scale-110 active:scale-95 shadow-lg border border-white/20">
+              <svg
+                className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 text-white"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2.5}
+                  d="M9 5l7 7-7 7"
+                />
+              </svg>
+            </div>
           </button>
-        </div>
 
-        {/* Image Indicators */}
-        <div className="absolute bottom-24 md:bottom-32 lg:bottom-8 left-1/2 transform -translate-x-1/2 z-20">
-          <div className="flex space-x-2">
+          {/* Modern Indicator Dots */}
+          <div className="absolute bottom-8 sm:bottom-10 md:bottom-12 left-1/2 transform -translate-x-1/2 z-30 flex gap-2 sm:gap-3">
             {backgroundImages.hero.map((_, index) => (
               <button
                 key={index}
-                onClick={() => setCurrentHeroImage(index)}
-                className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                onClick={() => {
+                  setCurrentHeroImage(index);
+                  setIsAutoPlay(false);
+                }}
+                className="group relative"
+                aria-label={`Go to slide ${index + 1}`}
+              >
+                <div className={`transition-all duration-500 rounded-full ${
                   currentHeroImage === index
-                    ? "bg-[#F47B34] scale-110"
-                    : "bg-white/50 hover:bg-white/80"
-                }`}
-              />
+                    ? "w-10 sm:w-12 h-2.5 sm:h-3 bg-[#F47B34] shadow-lg"
+                    : "w-2.5 sm:w-3 h-2.5 sm:h-3 bg-white/50 hover:bg-white/80"
+                }`}></div>
+              </button>
             ))}
+          </div>
+
+          {/* Slide Counter */}
+          <div className="absolute top-6 sm:top-8 right-6 sm:right-8 z-30">
+            <div className="px-4 sm:px-5 py-2 sm:py-2.5 bg-white/15 backdrop-blur-md rounded-full border border-white/20 shadow-lg">
+              <p className="text-white text-xs sm:text-sm font-semibold">
+                <span className="text-[#F47B34]">{currentHeroImage + 1}</span>
+                <span className="text-white/70"> / {backgroundImages.hero.length}</span>
+              </p>
+            </div>
           </div>
         </div>
       </header>
@@ -269,6 +285,9 @@ const Home = () => {
 </div>
 
 
+        <div className="pt-20">
+          <MemberFeatures />
+        </div>
         <div className="pt-20">
           <KeyHilight />
         </div>
